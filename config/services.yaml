@@ -1,0 +1,34 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  App\:
+    resource: '../src/*'
+    exclude: '../src/{Entity,Kernel.php}'
+
+  monolog.logger:
+    class: Monolog\Logger
+    arguments: [ 'app' ]
+    calls:
+      - [ pushHandler, [ '@monolog.handler.main' ] ]
+
+  App\Middleware\AuthMiddleware:
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, method: handle }
+
+  App\Mapper\ApiMapperInterface:
+    class: App\Mapper\ApiMapperInterface
+
+  App\Mapper\Api1Mapper:
+    class: App\Mapper\Api1Mapper
+
+  App\Mapper\Api2Mapper:
+    class: App\Mapper\Api2Mapper
+
+  App\Service\PriceFetcherService:
+    arguments:
+      $mappers:
+        api1: '@App\Mapper\Api1Mapper'
+        api2: '@App\Mapper\Api2Mapper'
+      $productPriceRepository: '@App\Repository\ProductPriceRepository'
